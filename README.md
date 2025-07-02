@@ -1,73 +1,174 @@
-# Welcome to your Lovable project
+# 🎯 서비스 기획서: 빌림 (BILLIM)
 
-## Project info
+---
 
-**URL**: https://lovable.dev/projects/2c2a9803-c1e3-4dbe-b92e-6eb28ec1f115
+## 📌 서비스 개요
 
-## How can I edit this code?
+**공구, 캠핑용품, 빔프로젝터 등 ‘잠깐 필요한 장비’를 동네 이웃과 시간 단위로 빌릴 수 있는 지역 기반 P2P 대여 플랫폼**
 
-There are several ways of editing your application.
+"사는 대신 잠깐 빌린다"는 선택이 더 쉬워집니다.  
+**빌리고 싶은 사람과 빌려주고 싶은 사람을 신뢰 기반으로 연결합니다.**
 
-**Use Lovable**
+>서비스 링크
+>https://billim-share-nearby.lovable.app/
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2c2a9803-c1e3-4dbe-b92e-6eb28ec1f115) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 👥 페르소나
 
-**Use your preferred IDE**
+### 1. 주 사용자: 자취생 조로 (20대 후반)
+- **직업**: 대학원생 (1인 가구)
+- **라이프스타일**: 셀프 인테리어, 택배 수령함 DIY 등 집에서 조립 작업을 자주 함
+- **목표**: 하루 이틀만 필요한 공구를 사지 않고 가까운 곳에서 빌리고 싶음
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+**필요 물품**: 전동드릴, 사다리, 글루건
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**니즈**
+- 동네에서 빠르게 빌릴 수 있었으면 좋겠음
+- 가격은 합리적이었으면 좋겠고, 상대방의 후기나 평점을 확인하고 싶음
+- 원하는 날짜에 미리 예약 가능했으면 좋겠음
 
-Follow these steps:
+**페인 포인트**
+- 중고거래 앱은 대부분 판매 위주
+- 공구 렌탈 업체는 멀고 비쌈
+- 지인에게 매번 빌리기도 애매함
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 2. 부 사용자: 캠핑러 윌슨 (30대 초반)
+- **직업**: 마케터
+- **라이프스타일**: 1년에 2~3회 친구들과 캠핑을 즐김
+- **목표**: 고가의 캠핑 장비를 매번 구매하지 않고 필요한 날만 대여하고 싶음
 
-# Step 3: Install the necessary dependencies.
-npm i
+**필요 물품**: 텐트, 매트, 빔프로젝터, 감성 조명
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+**니즈**
+- 내가 사기엔 부담되지만, 하루 이틀만 필요해서 대여하고 싶음
+- 주변에서 직접 수령/반납하면 좋겠음
+- 후기 보고 안심하고 빌리고 싶음
 
-**Edit a file directly in GitHub**
+**페인 포인트**
+- 렌탈 업체는 물품 배송이 늦거나 택배비가 비쌈
+- 사용 횟수가 적어 보관 공간도 아까움
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+### 3. 공급자 사용자: 빌려주는 윌슨 (30대 초반)
+- **직업**: 마케터 (같은 인물, 공급자 역할도 수행)
+- **보유 장비**: 텐트, 코펠, 접이식 테이블 등 캠핑 장비
+- **목표**: 자주 쓰지 않는 장비를 놀리지 않고 대여 수익을 얻고 싶음
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+**니즈**
+- 내 장비를 안전하게, 적정한 가격에 빌려주고 싶음
+- 파손/분실 등 사고가 없도록 보증금 시스템이 있었으면 좋겠음
+- 상대방의 후기나 평점을 보고 대여 여부를 결정하고 싶음
 
-## What technologies are used for this project?
+**페인 포인트**
+- 중고 거래는 물건을 팔면 끝이지만, 대여는 관리가 필요함
+- 불특정 다수와 거래하는 건 불안함
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📖 사용자 시나리오 및 스토리
 
-## How can I deploy this project?
+### 시나리오 1: 조로의 전동드릴 대여
+- **상황**: 조로는 책장을 설치하려는데 전동드릴이 필요하다.
+- **절차**:
+  1. 앱에서 "전동드릴" 검색
+  2. 내 위치 기준 가까운 순 정렬
+  3. 대여 가능 날짜 및 시간 확인
+  4. 대여 요청 → 수락 → 근처에서 직접 수령
+  5. 사용 후 반납 → 자동 리뷰 요청 알림
 
-Simply open [Lovable](https://lovable.dev/projects/2c2a9803-c1e3-4dbe-b92e-6eb28ec1f115) and click on Share -> Publish.
+**사용자 스토리**  
+_"이틀만 필요해서 샀다간 먼지만 쌓일 뻔했는데, 3천 원으로 해결해서 너무 만족!"_
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+### 시나리오 2: 윌슨의 캠핑 장비 대여
+- **상황**: 윌슨은 이번 주말 친구들과 글램핑을 간다.
+- **절차**:
+  1. 앱에서 ‘캠핑’ 카테고리 탐색
+  2. 매트, 텐트, 조명 등 대여 가능 품목 확인
+  3. 날짜별 예약 가능 여부 확인 후 요청
+  4. 수락되면 채팅으로 장소 조율 후 수령
+  5. 사용 후 반납 및 별점/리뷰 작성
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**사용자 스토리**  
+_"보관도 귀찮고 자주 쓰지도 않는데 이렇게 저렴하게 빌리니까 최고였어요."_  
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+### 시나리오 3: 공급자 윌슨의 캠핑 장비 대여 경험
+- **상황**: 윌슨은 자신이 가진 캠핑 장비를 활용해 소소한 수익을 얻고 싶다.
+- **절차**:
+  1. “내 장비 등록” → 텐트/의자/코펠 등록
+  2. 대여 가능 날짜/시간 설정, 가격 설정
+  3. 예약 요청 알림 → 사용자 프로필 확인 후 수락
+  4. 현장 대면 인도 및 반납
+  5. 사용자가 리뷰 작성 → 나의 매너 점수 상승
+
+**사용자 스토리**  
+_"몇 년 동안 쓰지도 않던 캠핑 텐트였는데, 대여 수익도 생기고 기분도 좋았어요."_  
+
+---
+
+## 💡 핵심 가치 제안
+
+1. **사는 대신, 동네에서 빌리는 공유경제 실현**
+2. **자주 쓰지 않는 고가·부피 큰 장비를 저렴하게 시간 단위로 대여**
+3. **신뢰 기반 리뷰/보증금 시스템으로 안심 대여 가능**
+4. **위치 중심 탐색 + 매칭 기반 대여로 UX 최소화**
+
+---
+
+## 🛠️ 핵심 기능
+
+1. **물품 등록 및 검색**
+    - 사진, 설명, 가격, 대여 가능 시간/날짜 입력
+    - 검색 필터: 위치, 카테고리, 날짜, 가격대
+
+2. **대여 요청/수락 시스템**
+    - 대여 요청 → 승인 → 대여 확정
+    - 자동 채팅방 생성
+
+3. **위치 기반 탐색**
+    - 실시간 사용자 위치 또는 주소 기반 정렬
+
+4. **후기 및 보증금 시스템**
+    - 대여 종료 후 리뷰 작성
+    - 파손 대비 보증금 설정 가능
+
+5. **마이페이지**
+    - 내가 빌린 물품 / 내가 빌려준 물품 내역
+    - 평점, 리뷰, 누적 대여 횟수, 정산 내역
+
+---
+
+## 🎯 구현 범위 (MVP)
+
+### Phase 1: 대여 게시판 MVP
+- 로그인 / 회원가입
+- 물품 등록 / 리스트 / 필터
+- 대여 요청 / 수락
+- 마이페이지
+
+### Phase 2: 채팅 및 보증금
+- 요청 수락 시 채팅방 생성
+- 보증금 결제 UI / 가상처리
+
+### Phase 3: 후기 및 사용자 평점 시스템
+- 리뷰 작성 기능
+- 평점 기반 사용자 신뢰 지수 표시
+
+---
+
+## 🪜 확장 가능성
+
+| 영역 | 확장 방향 |
+|------|----------|
+| 품목 | 악기, 육아용품, 행사 장비 등으로 카테고리 확장 |
+| 수익화 | 중개 수수료, 프리미엄 노출, 보험 연동 |
+| 커뮤니티 | ‘추천템’, ‘내가 빌려본 물건 후기’ 등 후기 기반 커뮤니티 탭 |
+| 오프라인 연계 | 지역 거점 공유보관함 또는 무인 픽업함 설치 |
+	
