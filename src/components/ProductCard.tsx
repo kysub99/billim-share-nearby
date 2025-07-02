@@ -23,9 +23,11 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   onRentRequest: () => void;
+  onReservationRequest: () => void;
+  onLocationClick: () => void;
 }
 
-const ProductCard = ({ product, onRentRequest }: ProductCardProps) => {
+const ProductCard = ({ product, onRentRequest, onReservationRequest, onLocationClick }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
 
   return (
@@ -64,8 +66,13 @@ const ProductCard = ({ product, onRentRequest }: ProductCardProps) => {
         </div>
         
         <div className="flex items-center text-gray-600 text-sm mb-2">
-          <MapPin className="w-4 h-4 mr-1" />
-          <span>{product.location} • {product.distance}</span>
+          <button 
+            onClick={onLocationClick}
+            className="flex items-center hover:text-blue-600 transition-colors"
+          >
+            <MapPin className="w-4 h-4 mr-1" />
+            <span className="hover:underline">{product.location} • {product.distance}</span>
+          </button>
         </div>
         
         <div className="flex items-center mb-3">
@@ -86,13 +93,30 @@ const ProductCard = ({ product, onRentRequest }: ProductCardProps) => {
           </div>
         </div>
         
-        <Button 
-          className="w-full"
-          disabled={!product.isAvailable}
-          onClick={onRentRequest}
-        >
-          {product.isAvailable ? '대여 요청하기' : '대여중'}
-        </Button>
+        <div className="space-y-2">
+          {product.isAvailable ? (
+            <Button 
+              className="w-full"
+              onClick={onRentRequest}
+            >
+              대여 요청하기
+            </Button>
+          ) : (
+            <>
+              <Button 
+                className="w-full"
+                variant="outline"
+                onClick={onReservationRequest}
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                예약하기
+              </Button>
+              <div className="text-xs text-center text-gray-500">
+                현재 대여 중이지만 예약 가능합니다
+              </div>
+            </>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

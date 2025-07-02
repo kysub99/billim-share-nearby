@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +7,17 @@ import { Search, MapPin, Star, Clock, Plus } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
 import Header from "@/components/Header";
+import ReservationDialog from "@/components/ReservationDialog";
+import LocationDialog from "@/components/LocationDialog";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [products, setProducts] = useState([]);
+  const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const { toast } = useToast();
 
   // 샘플 데이터
@@ -90,6 +94,24 @@ const Index = () => {
     toast({
       title: "대여 요청 완료!",
       description: "물품 소유자에게 대여 요청을 보냈습니다.",
+    });
+  };
+
+  const handleReservationRequest = (product) => {
+    setSelectedProduct(product);
+    setIsReservationDialogOpen(true);
+  };
+
+  const handleLocationClick = (product) => {
+    setSelectedProduct(product);
+    setIsLocationDialogOpen(true);
+  };
+
+  const handleReservationSubmit = (reservation) => {
+    console.log('예약 요청:', reservation);
+    toast({
+      title: "예약 요청 완료!",
+      description: `${reservation.productTitle}에 대한 예약 요청을 보냈습니다.`,
     });
   };
 
@@ -174,6 +196,8 @@ const Index = () => {
                   key={product.id}
                   product={product}
                   onRentRequest={() => handleRentRequest(product.id)}
+                  onReservationRequest={() => handleReservationRequest(product)}
+                  onLocationClick={() => handleLocationClick(product)}
                 />
               ))}
             </div>
@@ -212,6 +236,21 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* 다이얼로그들 */}
+      <ReservationDialog
+        isOpen={isReservationDialogOpen}
+        onClose={() => setIsReservationDialogOpen(false)}
+        product={selectedProduct}
+        onReservationSubmit={handleReservationSubmit}
+      />
+
+      <LocationDialog
+        isOpen={isLocationDialogOpen}
+        onClose={() => setIsLocationDialogOpen(false)}
+        address={selectedProduct?.location || ""}
+        productTitle={selectedProduct?.title || ""}
+      />
     </div>
   );
 };
