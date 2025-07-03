@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Star, Clock, Plus } from "lucide-react";
+import { Search, MapPin, Plus } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
 import Header from "@/components/Header";
 import ReservationDialog from "@/components/ReservationDialog";
 import LocationDialog from "@/components/LocationDialog";
+import SearchFilters from "@/components/SearchFilters";
+import PopularItems from "@/components/PopularItems";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,7 +20,9 @@ const Index = () => {
   const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [filters, setFilters] = useState({});
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // 샘플 데이터
   const sampleProducts = [
@@ -87,7 +91,43 @@ const Index = () => {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    
+    // 필터 적용
+    let matchesFilters = true;
+    
+    if (filters.category && filters.category !== product.category) {
+      matchesFilters = false;
+    }
+    
+    if (filters.priceRange) {
+      const [minPrice, maxPrice] = filters.priceRange;
+      if (product.price < minPrice || product.price > maxPrice) {
+        matchesFilters = false;
+      }
+    }
+    
+    if (filters.rating && product.rating < filters.rating) {
+      matchesFilters = false;
+    }
+    
+    return matchesSearch && matchesCategory && matchesFilters;
+  });
+
+  // 정렬 적용
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (filters.sortBy) {
+      case "price_low":
+        return a.price - b.price;
+      case "price_high":
+        return b.price - a.price;
+      case "rating":
+        return b.rating - a.rating;
+      case "recent":
+        return b.id - a.id;
+      case "distance":
+      default:
+        return parseFloat(a.distance) - parseFloat(b.distance);
+    }
   });
 
   const handleRentRequest = (productId) => {
@@ -113,6 +153,10 @@ const Index = () => {
       title: "예약 요청 완료!",
       description: `${reservation.productTitle}에 대한 예약 요청을 보냈습니다.`,
     });
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
   };
 
   return (
@@ -150,6 +194,11 @@ const Index = () => {
           <CategoryGrid onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
         </div>
 
+        {/* Popular Items Section */}
+        <div className="mb-8">
+          <PopularItems />
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
@@ -178,27 +227,31 @@ const Index = () => {
             <h2 className="text-2xl font-bold">
               {selectedCategory ? `${selectedCategory} 물품` : "추천 물품"}
             </h2>
-            <Button variant="outline" className="gap-2">
-              <Plus className="w-4 h-4" />
-              물품 등록하기
-            </Button>
+            <div className="flex items-center space-x-3">
+              <SearchFilters onFiltersChange={setFilters} initialFilters={filters} />
+              <Button variant="outline" className="gap-2">
+                <Plus className="w-4 h-4" />
+                물품 등록하기
+              </Button>
+            </div>
           </div>
           
-          {filteredProducts.length === 0 ? (
+          {sortedProducts.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">검색 결과가 없습니다</div>
               <Button variant="outline">다른 검색어로 시도해보세요</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onRentRequest={() => handleRentRequest(product.id)}
-                  onReservationRequest={() => handleReservationRequest(product)}
-                  onLocationClick={() => handleLocationClick(product)}
-                />
+              {sortedProducts.map((product) => (
+                <div key={product.id} onClick={() => handleProductClick(product.id)}>
+                  <ProductCard
+                    product={product}
+                    onRentRequest={() => handleRentRequest(product.id)}
+                    onReservationRequest={() => handleReservationRequest(product)}
+                    onLocationClick={() => handleLocationClick(product)}
+                  />
+                </div>
               ))}
             </div>
           )}
