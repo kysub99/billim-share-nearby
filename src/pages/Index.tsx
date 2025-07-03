@@ -1,34 +1,41 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Plus } from "lucide-react";
-import ProductCard from "@/components/ProductCard";
-import CategoryGrid from "@/components/CategoryGrid";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  Search, 
+  MapPin, 
+  Star, 
+  Clock, 
+  Heart,
+  Filter
+} from "lucide-react";
 import Header from "@/components/Header";
-import ReservationDialog from "@/components/ReservationDialog";
-import LocationDialog from "@/components/LocationDialog";
-import SearchFilters from "@/components/SearchFilters";
+import CategoryGrid from "@/components/CategoryGrid";
 import PopularItems from "@/components/PopularItems";
-import { useToast } from "@/hooks/use-toast";
+import ProductCard from "@/components/ProductCard";
+import SearchFilters from "@/components/SearchFilters";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [products, setProducts] = useState([]);
-  const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
-  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [filters, setFilters] = useState({});
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    category: "",
+    priceRange: [0, 50000],
+    rating: 0,
+    location: "",
+    sortBy: "newest"
+  });
 
   // 샘플 데이터
-  const sampleProducts = [
+  const products = [
     {
       id: 1,
-      title: "보쉬 전동드릴",
+      title: "보쉬 전동드릴 GSB 120-LI",
       category: "공구",
       price: 3000,
       priceUnit: "일",
@@ -38,7 +45,8 @@ const Index = () => {
       reviewCount: 24,
       image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=200&fit=crop",
       owner: "김철수",
-      isAvailable: true
+      isAvailable: true,
+      createdAt: new Date('2024-01-15')
     },
     {
       id: 2,
@@ -46,13 +54,14 @@ const Index = () => {
       category: "캠핑",
       price: 15000,
       priceUnit: "일",
-      location: "성수동",
-      distance: "1.2km",
+      location: "강남구",
+      distance: "2.3km",
       rating: 4.9,
       reviewCount: 18,
       image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=300&h=200&fit=crop",
       owner: "이영희",
-      isAvailable: true
+      isAvailable: false,
+      createdAt: new Date('2024-01-12')
     },
     {
       id: 3,
@@ -60,250 +69,183 @@ const Index = () => {
       category: "전자기기",
       price: 8000,
       priceUnit: "일",
-      location: "성수동",
-      distance: "0.8km",
+      location: "홍대입구",
+      distance: "1.8km",
       rating: 4.7,
-      reviewCount: 31,
+      reviewCount: 32,
       image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&h=200&fit=crop",
       owner: "박민수",
-      isAvailable: false
-    },
-    {
-      id: 4,
-      title: "접이식 사다리",
-      category: "공구",
-      price: 4000,
-      priceUnit: "일",
-      location: "성수동",
-      distance: "1.5km",
-      rating: 4.6,
-      reviewCount: 12,
-      image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=300&h=200&fit=crop",
-      owner: "최영수",
-      isAvailable: true
+      isAvailable: true,
+      createdAt: new Date('2024-01-10')
     }
   ];
 
-  useEffect(() => {
-    setProducts(sampleProducts);
-  }, []);
-
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    
-    // 필터 적용
-    let matchesFilters = true;
-    
-    if (filters.category && filters.category !== product.category) {
-      matchesFilters = false;
+    if (searchQuery && !product.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
     }
-    
-    if (filters.priceRange) {
-      const [minPrice, maxPrice] = filters.priceRange;
-      if (product.price < minPrice || product.price > maxPrice) {
-        matchesFilters = false;
-      }
+    if (filters.category && product.category !== filters.category) {
+      return false;
     }
-    
+    if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
+      return false;
+    }
     if (filters.rating && product.rating < filters.rating) {
-      matchesFilters = false;
+      return false;
     }
-    
-    return matchesSearch && matchesCategory && matchesFilters;
-  });
-
-  // 정렬 적용
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    return true;
+  }).sort((a, b) => {
     switch (filters.sortBy) {
-      case "price_low":
+      case 'price-low':
         return a.price - b.price;
-      case "price_high":
+      case 'price-high':
         return b.price - a.price;
-      case "rating":
+      case 'rating':
         return b.rating - a.rating;
-      case "recent":
-        return b.id - a.id;
-      case "distance":
+      case 'newest':
       default:
-        return parseFloat(a.distance) - parseFloat(b.distance);
+        return b.createdAt.getTime() - a.createdAt.getTime();
     }
   });
 
-  const handleRentRequest = (productId) => {
-    toast({
-      title: "대여 요청 완료!",
-      description: "물품 소유자에게 대여 요청을 보냈습니다.",
-    });
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // 검색 로직은 이미 filteredProducts에서 처리됨
   };
 
-  const handleReservationRequest = (product) => {
-    setSelectedProduct(product);
-    setIsReservationDialogOpen(true);
-  };
-
-  const handleLocationClick = (product) => {
-    setSelectedProduct(product);
-    setIsLocationDialogOpen(true);
-  };
-
-  const handleReservationSubmit = (reservation) => {
-    console.log('예약 요청:', reservation);
-    toast({
-      title: "예약 요청 완료!",
-      description: `${reservation.productTitle}에 대한 예약 요청을 보냈습니다.`,
-    });
-  };
-
-  const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+  const handleFiltersChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl font-bold mb-4">사는 대신, 빌리세요</h1>
-          <p className="text-xl mb-8 opacity-90">동네 이웃과 함께하는 스마트한 대여 서비스</p>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* 검색 섹션 */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              원하는 물건을 빌려보세요
+            </h1>
+            <p className="text-xl text-gray-600">
+              근처 이웃들과 함께하는 스마트한 공유 생활
+            </p>
+          </div>
           
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="필요한 물품을 검색해보세요 (예: 전동드릴, 텐트)"
-              className="pl-12 py-6 text-lg rounded-full border-0 shadow-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder="어떤 물건을 찾고 계신가요?"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-12 text-lg"
+                />
+              </div>
+              <Button 
+                type="button"
+                variant="outline" 
+                className="h-12 px-4"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="w-5 h-5" />
+              </Button>
+              <Button type="submit" className="h-12 px-8">
+                검색
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        {/* 필터 섹션 */}
+        {showFilters && (
+          <div className="mb-8">
+            <SearchFilters 
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
             />
           </div>
-          
-          <div className="flex items-center justify-center mt-4 text-sm opacity-80">
-            <MapPin className="w-4 h-4 mr-1" />
-            성수동 기준
-          </div>
-        </div>
-      </div>
+        )}
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Categories */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">카테고리</h2>
-          <CategoryGrid onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
+        {/* 빠른 카테고리 */}
+        <div className="mb-12">
+          <CategoryGrid />
         </div>
 
-        {/* Popular Items Section */}
-        <div className="mb-8">
+        {/* 인기 물품 */}
+        <div className="mb-12">
           <PopularItems />
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">1,234</div>
-              <div className="text-gray-600">등록된 물품</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">567</div>
-              <div className="text-gray-600">완료된 대여</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">4.8</div>
-              <div className="text-gray-600">평균 만족도</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Products Section */}
+        {/* 최근 등록된 물품 */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">
-              {selectedCategory ? `${selectedCategory} 물품` : "추천 물품"}
+              {searchQuery ? `'${searchQuery}' 검색 결과` : "최근 등록된 물품"}
             </h2>
-            <div className="flex items-center space-x-3">
-              <SearchFilters onFiltersChange={setFilters} initialFilters={filters} />
-              <Button variant="outline" className="gap-2">
-                <Plus className="w-4 h-4" />
-                물품 등록하기
-              </Button>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-gray-500" />
+              <span className="text-sm text-gray-500">실시간 업데이트</span>
             </div>
           </div>
-          
-          {sortedProducts.length === 0 ? (
+
+          {filteredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">검색 결과가 없습니다</div>
-              <Button variant="outline">다른 검색어로 시도해보세요</Button>
+              <div className="text-gray-500 mb-4">
+                <Star className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg">검색 결과가 없습니다.</p>
+                <p className="text-sm">다른 키워드로 검색해보세요.</p>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilters({
+                    category: "",
+                    priceRange: [0, 50000],
+                    rating: 0,
+                    location: "",
+                    sortBy: "newest"
+                  });
+                }}
+              >
+                전체 물품 보기
+              </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedProducts.map((product) => (
-                <div key={product.id} onClick={() => handleProductClick(product.id)}>
-                  <ProductCard
-                    product={product}
-                    onRentRequest={() => handleRentRequest(product.id)}
-                    onReservationRequest={() => handleReservationRequest(product)}
-                    onLocationClick={() => handleLocationClick(product)}
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onClick={() => navigate(`/product/${product.id}`)}
+                />
               ))}
             </div>
           )}
         </div>
 
-        {/* How it works */}
-        <Card className="bg-gradient-to-r from-gray-50 to-blue-50 border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl">빌림은 이렇게 작동해요</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="font-semibold mb-2">1. 검색하기</h3>
-                <p className="text-gray-600">필요한 물품을 검색하고 가까운 곳에서 찾아보세요</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8 text-green-600" />
-                </div>
-                <h3 className="font-semibold mb-2">2. 예약하기</h3>
-                <p className="text-gray-600">원하는 날짜와 시간에 대여 요청을 보내세요</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="font-semibold mb-2">3. 사용하기</h3>
-                <p className="text-gray-600">안전하게 사용하고 후기를 남겨주세요</p>
-              </div>
+        {/* 통계 섹션 */}
+        <div className="bg-white rounded-2xl p-8 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">1,234</div>
+              <div className="text-gray-600">등록된 물품</div>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <div className="text-3xl font-bold text-green-600 mb-2">567</div>
+              <div className="text-gray-600">활성 사용자</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">89%</div>
+              <div className="text-gray-600">만족도</div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* 다이얼로그들 */}
-      <ReservationDialog
-        isOpen={isReservationDialogOpen}
-        onClose={() => setIsReservationDialogOpen(false)}
-        product={selectedProduct}
-        onReservationSubmit={handleReservationSubmit}
-      />
-
-      <LocationDialog
-        isOpen={isLocationDialogOpen}
-        onClose={() => setIsLocationDialogOpen(false)}
-        address={selectedProduct?.location || ""}
-        productTitle={selectedProduct?.title || ""}
-      />
     </div>
   );
 };
