@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +29,18 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface SearchFiltersProps {
+  filters: {
+    priceRange: number[];
+    distance: number;
+    category: string;
+    availableDate: Date | null;
+    rating: number;
+    sortBy: string;
+  };
   onFiltersChange: (filters: any) => void;
-  initialFilters?: any;
 }
 
-const SearchFilters = ({ onFiltersChange, initialFilters = {} }: SearchFiltersProps) => {
+const SearchFilters = ({ filters: initialFilters, onFiltersChange }: SearchFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState({
     priceRange: initialFilters.priceRange || [0, 50000],

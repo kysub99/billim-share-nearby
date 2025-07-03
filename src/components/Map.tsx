@@ -32,10 +32,10 @@ const Map = ({ address = "서울특별시 성동구 성수동", className = "" }
       const response = await fetch(geocodeUrl);
       const data = await response.json();
       
-      let center = [127.0557, 37.5439]; // 기본값: 성수동
+      let center: [number, number] = [127.0557, 37.5439]; // 기본값: 성수동
       
       if (data.features && data.features.length > 0) {
-        center = data.features[0].center;
+        center = data.features[0].center as [number, number];
       }
 
       // 지도 초기화

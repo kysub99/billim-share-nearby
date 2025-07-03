@@ -17,10 +17,13 @@ import CategoryGrid from "@/components/CategoryGrid";
 import PopularItems from "@/components/PopularItems";
 import ProductCard from "@/components/ProductCard";
 import SearchFilters from "@/components/SearchFilters";
+import LocationProvider, { useLocation } from "@/components/LocationProvider";
+import LocationButton from "@/components/LocationButton";
 import { useNavigate } from "react-router-dom";
 
-const Index = () => {
+const IndexContent = () => {
   const navigate = useNavigate();
+  const { currentLocation } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -28,10 +31,12 @@ const Index = () => {
     priceRange: [0, 50000],
     rating: 0,
     location: "",
-    sortBy: "newest"
+    sortBy: "newest",
+    distance: 5,
+    availableDate: null as Date | null
   });
 
-  // 샘플 데이터
+  // 샘플 데이터 - 위치 기반으로 거리 계산
   const products = [
     {
       id: 1,
@@ -40,7 +45,7 @@ const Index = () => {
       price: 3000,
       priceUnit: "일",
       location: "성수동",
-      distance: "0.5km",
+      distance: currentLocation ? "0.5km" : "0.5km",
       rating: 4.8,
       reviewCount: 24,
       image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=200&fit=crop",
@@ -55,7 +60,7 @@ const Index = () => {
       price: 15000,
       priceUnit: "일",
       location: "강남구",
-      distance: "2.3km",
+      distance: currentLocation ? "2.3km" : "2.3km",
       rating: 4.9,
       reviewCount: 18,
       image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=300&h=200&fit=crop",
@@ -70,7 +75,7 @@ const Index = () => {
       price: 8000,
       priceUnit: "일",
       location: "홍대입구",
-      distance: "1.8km",
+      distance: currentLocation ? "1.8km" : "1.8km",
       rating: 4.7,
       reviewCount: 32,
       image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&h=200&fit=crop",
@@ -93,6 +98,11 @@ const Index = () => {
     if (filters.rating && product.rating < filters.rating) {
       return false;
     }
+    // 거리 필터링 (실제로는 위치 기반 계산 필요)
+    const distanceKm = parseFloat(product.distance.replace('km', ''));
+    if (distanceKm > filters.distance) {
+      return false;
+    }
     return true;
   }).sort((a, b) => {
     switch (filters.sortBy) {
@@ -102,6 +112,8 @@ const Index = () => {
         return b.price - a.price;
       case 'rating':
         return b.rating - a.rating;
+      case 'distance':
+        return parseFloat(a.distance.replace('km', '')) - parseFloat(b.distance.replace('km', ''));
       case 'newest':
       default:
         return b.createdAt.getTime() - a.createdAt.getTime();
@@ -117,6 +129,10 @@ const Index = () => {
     setFilters(newFilters);
   };
 
+  const handleCategorySelect = (category: string) => {
+    setFilters(prev => ({ ...prev, category }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -128,9 +144,20 @@ const Index = () => {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               원하는 물건을 빌려보세요
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 mb-4">
               근처 이웃들과 함께하는 스마트한 공유 생활
             </p>
+            
+            {/* 위치 정보 표시 */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <LocationButton />
+              {currentLocation && (
+                <Badge variant="secondary" className="gap-1">
+                  <MapPin className="w-3 h-3" />
+                  {currentLocation.address}
+                </Badge>
+              )}
+            </div>
           </div>
           
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
@@ -172,7 +199,7 @@ const Index = () => {
 
         {/* 빠른 카테고리 */}
         <div className="mb-12">
-          <CategoryGrid />
+          <CategoryGrid onCategorySelect={handleCategorySelect} selectedCategory={filters.category} />
         </div>
 
         {/* 인기 물품 */}
@@ -184,7 +211,8 @@ const Index = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">
-              {searchQuery ? `'${searchQuery}' 검색 결과` : "최근 등록된 물품"}
+              {searchQuery ? `'${searchQuery}' 검색 결과` : 
+               currentLocation ? `${currentLocation.district} 근처 물품` : "최근 등록된 물품"}
             </h2>
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-gray-500" />
@@ -208,7 +236,9 @@ const Index = () => {
                     priceRange: [0, 50000],
                     rating: 0,
                     location: "",
-                    sortBy: "newest"
+                    sortBy: "newest",
+                    distance: 5,
+                    availableDate: null
                   });
                 }}
               >
@@ -247,6 +277,14 @@ const Index = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <LocationProvider>
+      <IndexContent />
+    </LocationProvider>
   );
 };
 
